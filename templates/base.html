@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}会計システム{% endblock %}</title>
+    <!-- Tom Select CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        header h1 {
+            font-size: 1.5rem;
+        }
+        
+        /* サイドバーナビゲーション */
+        .sidebar {
+            position: fixed;
+            top: 60px; /* ヘッダーの高さ分 */
+            left: 0;
+            width: 220px;
+            height: calc(100vh - 60px);
+            background-color: #2c3e50;
+            overflow-y: auto;
+            padding: 1rem 0;
+            box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+        }
+        
+        /* メニューグループ */
+        .menu-group {
+            margin-bottom: 0.5rem;
+        }
+        
+        /* カテゴリヘッダー（クリック可能） */
+        .menu-category {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #ecf0f1;
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+        
+        .menu-category:hover {
+            background-color: #34495e;
+            border-left-color: #3498db;
+        }
+        
+        .menu-category .arrow {
+            transition: transform 0.3s;
+            font-size: 0.7rem;
+        }
+        
+        .menu-category.expanded .arrow {
+            transform: rotate(90deg);
+        }
+        
+        /* サブメニュー */
+        .submenu {
+            max-height: 0 !important;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background-color: #1a252f;
+        }
+        
+        .submenu.expanded {
+            max-height: 500px !important;
+        }
+        
+        .submenu a {
+            display: block;
+            color: #bdc3c7;
+            text-decoration: none;
+            padding: 0.6rem 1.5rem 0.6rem 2.5rem;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+            font-size: 0.85rem;
+        }
+        
+        .submenu a:hover {
+            background-color: #34495e;
+            border-left-color: #3498db;
+            color: #ecf0f1;
+        }
+        
+        .submenu a.active {
+            background-color: #34495e;
+            border-left-color: #3498db;
+            color: #3498db;
+        }
+        
+        /* ホームリンク */
+        .sidebar > a {
+            display: block;
+            color: #ecf0f1;
+            text-decoration: none;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+        
+        .sidebar > a:hover {
+            background-color: #34495e;
+            border-left-color: #3498db;
+        }
+        
+        .sidebar > a.active {
+            background-color: #34495e;
+            border-left-color: #3498db;
+            color: #3498db;
+        }
+        
+        /* メインコンテンツエリア */
+        .main-content {
+            margin-left: 220px;
+            margin-top: 60px; /* ヘッダーの高さ分 */
+            min-height: calc(100vh - 60px);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+        
+        .alert {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+            border-left: 4px solid;
+        }
+        
+        .alert-success {
+            background-color: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+        
+        .alert-error {
+            background-color: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+        
+        .alert-info {
+            background-color: #d1ecf1;
+            border-color: #17a2b8;
+            color: #0c5460;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            margin: 0.25rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-secondary {
+            background-color: #95a5a6;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+        
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        
+        footer {
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            margin-left: 220px;
+        }
+        
+        {% block extra_css %}{% endblock %}
+    </style>
+</head>
+<body>
+    <header>
+        <h1>会計システム</h1>
+        {% if current_organization and current_fiscal_period %}
+        <div style="display: flex; align-items: center; gap: 2rem; margin-left: auto;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; opacity: 0.95;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: middle;">
+                    <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
+                </svg>
+                <span>{{ current_fiscal_period.start_date }} ～ {{ current_fiscal_period.end_date }}</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; opacity: 0.95;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: middle;">
+                    <path d="M4 2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1Zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1Zm3.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1ZM4 5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1ZM7.5 5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1Zm2.5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1ZM4.5 8a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1Zm2.5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1Zm3.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1Z"/>
+                    <path d="M2 1a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V1Zm11 0H3v14h3v-2.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5V15h3V1Z"/>
+                </svg>
+                <span>{{ current_organization.name }}</span>
+            </div>
+        </div>
+        {% endif %}
+    </header>
+    
+    <!-- サイドバーナビゲーション -->
+    <nav class="sidebar">
+        <a href="{{ url_for('home') }}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: middle; margin-right: 0.5rem;">
+                <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.707 1.5ZM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5 5 5Z"/>
+            </svg>
+            ホーム
+        </a>
+        
+        <!-- 仕訳入力 -->
+        <div class="menu-group">
+            <div class="menu-category" data-target="journal-entry-menu">
+                <span>仕訳入力</span>
+                <span class="arrow">▶</span>
+            </div>
+            <div class="submenu" id="journal-entry-menu">
+                <a href="{{ url_for('journal_entries_list') }}">振替伝票</a>
+                <a href="{{ url_for('journal_entries_continuous') }}">連続仕訳登録</a>
+                <a href="{{ url_for('journal_entries_detail') }}">取引明細登録</a>
+            </div>
+        </div>
+        
+        <!-- 会計帳簿 -->
+        <div class="menu-group">
+            <div class="menu-category" data-target="accounting-books-menu">
+                <span>会計帳簿</span>
+                <span class="arrow">▶</span>
+            </div>
+            <div class="submenu" id="accounting-books-menu">
+                <a href="{{ url_for('cash_books_list') }}">口座出納帳</a>
+                <a href="{{ url_for('general_ledger') }}">仕訳帳</a>
+                <a href="{{ url_for('ledger') }}">総勘定元帳</a>
+                <a href="{{ url_for('trial_balance') }}">試算表</a>
+            </div>
+        </div>
+        
+        <!-- マスター管理 -->
+        <div class="menu-group">
+            <div class="menu-category" data-target="master-menu">
+                <span>マスター管理</span>
+                <span class="arrow">▶</span>
+            </div>
+            <div class="submenu" id="master-menu">
+                <a href="{{ url_for('masters_index') }}">マスター管理</a>
+            </div>
+        </div>
+        
+        <!-- 設定 -->
+        <div class="menu-group">
+            <div class="menu-category" data-target="settings-menu">
+                <span>設定</span>
+                <span class="arrow">▶</span>
+            </div>
+            <div class="submenu" id="settings-menu">
+                <a href="{{ url_for('organization_settings') }}" {% if active_submenu == 'organization_settings' %}class="active"{% endif %}>事業所の設定</a>
+                
+                <a href="#">メンバー関連の設定</a>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- メインコンテンツ -->
+    <div class="main-content">
+        <!-- 固定ヘッダーエリア（ページごとにカスタマイズ可能） -->
+        {% block sticky_header %}{% endblock %}
+        
+        <div class="container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+    
+    <footer>
+        <p>&copy; 2024 会計システム. All rights reserved.</p>
+    </footer>
+    
+    <!-- Tom Select JS -->
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+    
+    <script>
+        // メニューカテゴリのクリックイベント
+        document.querySelectorAll('.menu-category').forEach(category => {
+            category.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-target');
+                const submenu = document.getElementById(targetId);
+                
+                // 他のサブメニューを閉じる
+                document.querySelectorAll('.submenu').forEach(menu => {
+                    if (menu.id !== targetId) {
+                        menu.classList.remove('expanded');
+                        menu.previousElementSibling.classList.remove('expanded');
+                    }
+                });
+                
+                // 現在のサブメニューを切り替える
+                submenu.classList.toggle('expanded');
+                this.classList.toggle('expanded');
+            });
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
